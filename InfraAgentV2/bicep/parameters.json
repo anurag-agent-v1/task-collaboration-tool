@@ -1,0 +1,36 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "subscriptionId": {
+      "value": "00000000-0000-0000-0000-000000000000"
+    },
+    "location": {
+      "value": "eastus"
+    },
+    "environment": {
+      "value": "dev"
+    },
+    "gatewayPrefix": {
+      "value": "infraagent"
+    },
+    "apimSku": {
+      "value": "Developer"
+    },
+    "apimPublisherName": {
+      "value": "InfraAgentV2 Team"
+    },
+    "apimPublisherEmail": {
+      "value": "platform-team@example.com"
+    },
+    "monitoringRetention": {
+      "value": 30
+    },
+    "tags": {
+      "value": {
+        "owner": "platform-team",
+        "businessUnit": "ai-platform"
+      }
+    }
+  }
+}

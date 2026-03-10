@@ -1,0 +1,13 @@
+subscription_id       = "00000000-0000-0000-0000-000000000000"
+resource_group_name   = "infraagent-demo-rg"
+location              = "eastus"
+environment           = "dev"
+gateway_prefix        = "infraagent"
+apim_sku              = "Developer"
+apim_publisher_name   = "InfraAgentV2 Team"
+apim_publisher_email  = "platform-team@example.com"
+monitoring_retention_days = 30
+tags = {
+  business_unit = "ai-platform"
+  owner         = "infraplat"
+}
