@@ -159,3 +159,166 @@ select {
   color: #444;
   line-height: 1.5;
 }
+
+.daily-touchpoint,
+.idea-pipeline {
+  background: #fff;
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+}
+
+.daily-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.daily-header button {
+  border: none;
+  background: #1f2937;
+  color: #fff;
+  padding: 0.45rem 0.8rem;
+  border-radius: 0.65rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.digest-output {
+  width: 100%;
+  margin-top: 1rem;
+  min-height: 180px;
+  border-radius: 0.75rem;
+  border: 1px solid #d8dde7;
+  padding: 1rem;
+  font-family: "SFMono-Regular", "SFMono", "Menlo", monospace;
+  background: #f9fafb;
+  resize: vertical;
+}
+
+.idea-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.idea-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.75rem;
+}
+
+.idea-summary-card {
+  padding: 0.75rem 1rem;
+  border-radius: 0.85rem;
+  background: #f3f4f6;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+}
+
+.idea-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.idea-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.idea-filters button,
+.idea-form button,
+.approve-button {
+  border: none;
+  background: #1f2937;
+  color: #fff;
+  padding: 0.45rem 0.85rem;
+  border-radius: 0.65rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.idea-filters button.active {
+  background: #7c3aed;
+}
+
+.idea-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.idea-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 1rem;
+  padding: 1rem;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.idea-card-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+.idea-card .tags {
+  display: flex;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.approve-button {
+  align-self: flex-start;
+  font-weight: 500;
+}
+
+.idea-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  border-top: 1px dashed #e5e7eb;
+  padding-top: 1rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+}
+
+textarea,
+input[type="text"],
+select,
+.idea-form input,
+.idea-form textarea {
+  width: 100%;
+  border-radius: 0.65rem;
+  border: 1px solid #d8dde7;
+  padding: 0.65rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+}
+
+.idea-form textarea {
+  min-height: 100px;
+}

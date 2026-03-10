@@ -56,7 +56,7 @@ export default function HomePage() {
   }, []);
 
   const handleIdeaSubmit = useCallback(
-    (event: React.FormEvent<HTMLFormElement>) => {
+    (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
       if (!ideaFormState.title.trim() || !ideaFormState.summary.trim()) {
         return;
@@ -82,6 +82,12 @@ export default function HomePage() {
     },
     [ideaFormState]
   );
+
+  const handleApproveIdea = useCallback((ideaId: string) => {
+    setIdeaPipeline((prev) =>
+      prev.map((idea) => (idea.id === ideaId ? { ...idea, status: "approved" as IdeaStatus } : idea))
+    );
+  }, []);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -196,26 +202,34 @@ export default function HomePage() {
         </div>
 
         <div className="idea-grid">
-          {filteredIdeas.map((idea) => (
-            <article key={idea.id} className="idea-card">
-              <div className="idea-card-meta">
-                <span>{ideaStatusMetadata[idea.status].label}</span>
-                <span>{new Date(idea.createdAt).toLocaleDateString()}</span>
-              </div>
-              <h3>{idea.title}</h3>
-              <p className="note">{idea.summary}</p>
-              <p className="note" style={{ fontSize: "0.9rem", color: "#1e293b" }}>
-                {idea.detail}
-              </p>
-              <div className="tags">
-                {idea.tags.map((tag) => (
-                  <span key={tag} className="tag">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            </article>
-          ))}
+          {filteredIdeas.map((idea) => {
+            const canApprove = idea.status !== "approved";
+            return (
+              <article key={idea.id} className="idea-card">
+                <div className="idea-card-meta">
+                  <span>{ideaStatusMetadata[idea.status].label}</span>
+                  <span>{new Date(idea.createdAt).toLocaleDateString()}</span>
+                </div>
+                <h3>{idea.title}</h3>
+                <p className="note">{idea.summary}</p>
+                <p className="note" style={{ fontSize: "0.9rem", color: "#1e293b" }}>
+                  {idea.detail}
+                </p>
+                <div className="tags">
+                  {idea.tags.map((tag) => (
+                    <span key={tag} className="tag">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                {canApprove && (
+                  <button type="button" className="approve-button" onClick={() => handleApproveIdea(idea.id)}>
+                    Approve this idea
+                  </button>
+                )}
+              </article>
+            );
+          })}
           {filteredIdeas.length === 0 && <p className="note">No ideas found — broaden the filters or add a new spark.</p>}
         </div>
 
