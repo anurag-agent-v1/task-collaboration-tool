@@ -1,21 +1,27 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import entries, { Entry } from "../data/entries";
+import ideasData from "../data/ideas";
+import { filterEntries, globalSearch } from "../lib/filters";
+import {
+  Idea,
+  IdeaStatus,
+  filterIdeas,
+  ideaStatusMetadata,
+  ideaStatusOrder,
+  summarizeStatusCounts
+} from "../lib/ideaPipeline";
 
-const dateFilters: Record<string, (entryDate: Date) => boolean> = {
-  all: () => true,
-  week: (entryDate) => {
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - 7);
-    return entryDate >= cutoff;
-  },
-  month: (entryDate) => {
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - 30);
-    return entryDate >= cutoff;
-  }
+const initialIdeaFormState = {
+  title: "",
+  summary: "",
+  detail: "",
+  tags: "",
+  status: "draft" as IdeaStatus
 };
+
+type IdeaFormState = typeof initialIdeaFormState;
 
 export default function HomePage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -24,41 +30,58 @@ export default function HomePage() {
   const [globalSearchOpen, setGlobalSearchOpen] = useState(false);
   const [globalQuery, setGlobalQuery] = useState("");
 
-  const normalizedTerm = useMemo(() => searchTerm.trim().toLowerCase(), [searchTerm]);
-  const filteredEntries = useMemo(() => {
-    return entries.filter((entry) => {
-      if (typeFilter !== "all" && entry.type !== typeFilter) return false;
-      const entryDate = new Date(entry.date);
-      if (!dateFilters[dateFilter](entryDate)) return false;
-      if (!normalizedTerm) return true;
-      return (
-        entry.title.toLowerCase().includes(normalizedTerm) ||
-        entry.summary.toLowerCase().includes(normalizedTerm) ||
-        entry.detail.toLowerCase().includes(normalizedTerm) ||
-        entry.tags.some((tag) => tag.toLowerCase().includes(normalizedTerm))
-      );
-    });
-  }, [normalizedTerm, typeFilter, dateFilter]);
+  const [ideaPipeline, setIdeaPipeline] = useState<Idea[]>(ideasData);
+  const [ideaStatusFilter, setIdeaStatusFilter] = useState<"all" | IdeaStatus>("all");
+  const [ideaQuery, setIdeaQuery] = useState("");
+  const [ideaFormState, setIdeaFormState] = useState<IdeaFormState>(initialIdeaFormState);
+
+  const filteredEntries = useMemo(() => filterEntries(searchTerm, typeFilter, dateFilter, entries), [searchTerm, typeFilter, dateFilter]);
 
   const globalResults = useMemo(() => {
-    const normalized = globalQuery.trim().toLowerCase();
-    if (!globalSearchOpen || !normalized) return [];
-    return entries
-      .filter((entry) => {
-        return (
-          entry.title.toLowerCase().includes(normalized) ||
-          entry.summary.toLowerCase().includes(normalized) ||
-          entry.detail.toLowerCase().includes(normalized) ||
-          entry.tags.some((tag) => tag.toLowerCase().includes(normalized))
-        );
-      })
-      .slice(0, 5);
+    if (!globalSearchOpen) return [];
+    return globalSearch(globalQuery, entries);
   }, [globalQuery, globalSearchOpen]);
+
+  const filteredIdeas = useMemo(() => filterIdeas(ideaPipeline, ideaStatusFilter, ideaQuery), [ideaPipeline, ideaStatusFilter, ideaQuery]);
+
+  const ideaStatusCounts = useMemo(() => summarizeStatusCounts(ideaPipeline), [ideaPipeline]);
 
   const toggleGlobalSearch = useCallback(() => {
     setGlobalSearchOpen((prev) => !prev);
     setGlobalQuery("");
   }, []);
+
+  const handleIdeaFieldChange = useCallback((field: keyof IdeaFormState, value: string) => {
+    setIdeaFormState((prev) => ({ ...prev, [field]: value }));
+  }, []);
+
+  const handleIdeaSubmit = useCallback(
+    (event: React.FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      if (!ideaFormState.title.trim() || !ideaFormState.summary.trim()) {
+        return;
+      }
+
+      const tags = ideaFormState.tags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean);
+
+      const newIdea: Idea = {
+        id: `idea-${Date.now()}`,
+        title: ideaFormState.title.trim(),
+        summary: ideaFormState.summary.trim(),
+        detail: ideaFormState.detail.trim(),
+        status: ideaFormState.status,
+        tags,
+        createdAt: new Date().toISOString().split("T")[0]
+      };
+
+      setIdeaPipeline((prev) => [newIdea, ...prev]);
+      setIdeaFormState(initialIdeaFormState);
+    },
+    [ideaFormState]
+  );
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -79,7 +102,7 @@ export default function HomePage() {
     <div>
       <header className="header">
         <h1>Second Brain</h1>
-        <p>A calm, searchable view of our memories and conversations.</p>
+        <p>A calm, searchable view of our memories, conversations, and sparks.</p>
       </header>
 
       <section className="controls">
@@ -125,9 +148,129 @@ export default function HomePage() {
             </div>
           </article>
         ))}
-        {filteredEntries.length === 0 && (
-          <p className="note">No matches yet — broaden your filters or add more notes.</p>
-        )}
+        {filteredEntries.length === 0 && <p className="note">No matches yet — broaden your filters or add more notes.</p>}
+      </section>
+
+      <section className="idea-pipeline">
+        <header className="idea-header">
+          <div>
+            <h2>Idea pipeline</h2>
+            <p>Keep a record of every spark the AI shares and the thoughts you pass back.</p>
+          </div>
+          <div className="idea-summary-grid">
+            {ideaStatusCounts.map(({ status, count }) => (
+              <div key={status} className="idea-summary-card">
+                <span>{ideaStatusMetadata[status].label}</span>
+                <strong>{count}</strong>
+              </div>
+            ))}
+          </div>
+        </header>
+
+        <div className="idea-controls">
+          <div className="idea-filters">
+            <button
+              type="button"
+              className={ideaStatusFilter === "all" ? "active" : ""}
+              onClick={() => setIdeaStatusFilter("all")}
+            >
+              All ideas ({ideaPipeline.length})
+            </button>
+            {ideaStatusOrder.map((status) => (
+              <button
+                key={status}
+                type="button"
+                className={ideaStatusFilter === status ? "active" : ""}
+                onClick={() => setIdeaStatusFilter(status)}
+              >
+                {ideaStatusMetadata[status].label}
+              </button>
+            ))}
+          </div>
+          <input
+            type="search"
+            placeholder="Search ideas..."
+            value={ideaQuery}
+            onChange={(event) => setIdeaQuery(event.target.value)}
+          />
+        </div>
+
+        <div className="idea-grid">
+          {filteredIdeas.map((idea) => (
+            <article key={idea.id} className="idea-card">
+              <div className="idea-card-meta">
+                <span>{ideaStatusMetadata[idea.status].label}</span>
+                <span>{new Date(idea.createdAt).toLocaleDateString()}</span>
+              </div>
+              <h3>{idea.title}</h3>
+              <p className="note">{idea.summary}</p>
+              <p className="note" style={{ fontSize: "0.9rem", color: "#1e293b" }}>
+                {idea.detail}
+              </p>
+              <div className="tags">
+                {idea.tags.map((tag) => (
+                  <span key={tag} className="tag">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </article>
+          ))}
+          {filteredIdeas.length === 0 && <p className="note">No ideas found — broaden the filters or add a new spark.</p>}
+        </div>
+
+        <form className="idea-form" onSubmit={handleIdeaSubmit}>
+          <div className="form-grid">
+            <label>
+              Title
+              <input
+                type="text"
+                value={ideaFormState.title}
+                onChange={(event) => handleIdeaFieldChange("title", event.target.value)}
+                required
+              />
+            </label>
+            <label>
+              Summary
+              <input
+                type="text"
+                value={ideaFormState.summary}
+                onChange={(event) => handleIdeaFieldChange("summary", event.target.value)}
+                required
+              />
+            </label>
+            <label>
+              Status
+              <select
+                value={ideaFormState.status}
+                onChange={(event) => handleIdeaFieldChange("status", event.target.value as IdeaStatus)}
+              >
+                {ideaStatusOrder.map((status) => (
+                  <option key={status} value={status}>
+                    {ideaStatusMetadata[status].label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              Tags
+              <input
+                type="text"
+                value={ideaFormState.tags}
+                onChange={(event) => handleIdeaFieldChange("tags", event.target.value)}
+                placeholder="Comma-separated"
+              />
+            </label>
+          </div>
+          <label className="stretch">
+            Details
+            <textarea
+              value={ideaFormState.detail}
+              onChange={(event) => handleIdeaFieldChange("detail", event.target.value)}
+            />
+          </label>
+          <button type="submit">Capture idea</button>
+        </form>
       </section>
 
       {globalSearchOpen && (
