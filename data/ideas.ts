@@ -28,7 +28,7 @@ const ideas: Idea[] = [
   {
     id: "idea-003",
     title: "Daily AI touchpoint",
-    status: "approved",
+    status: "implemented",
     source: "ai",
     summary: "Have the AI summarize and hand off ideas in a digestible file.",
     detail:
