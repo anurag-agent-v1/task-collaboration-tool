@@ -1,0 +1,26 @@
+graph LR
+    DevLayers["Capture Layers of Development"]
+    Requirements["Requirements Capture"]
+    Design["Architecture & Design"]
+    Implementation["Implementation & Coding"]
+    Testing["Testing & QA"]
+    Deployment["Deployment & Monitoring"]
+    DevLayers --> Requirements
+    Requirements --> Design --> Implementation --> Testing --> Deployment
+
+    subgraph Platform Architecture
+      Excel["Legacy Excel + Macros"]
+      BrowserFlows["Power Automate Browser Flows"]
+      APIOrchestration["API-Oriented Services"]
+      RuleEngine["Rules & Decisioning Engine"]
+      IntegrationHub["Integration & Messaging Layer"]
+      Monitoring["Telemetry & Observability"]
+    end
+
+    Excel --> BrowserFlows
+    BrowserFlows --> APIOrchestration
+    APIOrchestration --> RuleEngine
+    APIOrchestration --> IntegrationHub
+    IntegrationHub --> RuleEngine
+    RuleEngine --> Monitoring
+    Monitoring --> Deployment
