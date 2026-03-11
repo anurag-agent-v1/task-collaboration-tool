@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { IdeaStatus, filterIdeas, matchesIdea, ideaStatusOrder } from "../lib/ideaPipeline";
+import {
+  IdeaSource,
+  IdeaStatus,
+  filterIdeas,
+  matchesIdea,
+  ideaStatusOrder,
+  summarizeSourceCounts
+} from "../lib/ideaPipeline";
 
 const sampleIdea = {
   id: "i-123",
@@ -8,6 +15,7 @@ const sampleIdea = {
   detail: "Provide a small UI that highlights where each idea lives and makes it easy to capture new sparks.",
   tags: ["ux", "workflow"],
   status: "draft" as IdeaStatus,
+  source: "ai" as IdeaSource,
   createdAt: "2026-03-10"
 };
 
@@ -33,6 +41,7 @@ describe("filterIdeas", () => {
       ...sampleIdea,
       id: "i-456",
       status: "review" as IdeaStatus,
+      source: "human" as IdeaSource,
       title: "Add a reminder about idea reviews",
       summary: "Prompt contributors when feedback is needed",
       detail: "Use lightweight nudges so ideas in review don’t stall."
@@ -41,6 +50,7 @@ describe("filterIdeas", () => {
       ...sampleIdea,
       id: "i-789",
       status: "approved" as IdeaStatus,
+      source: "ai" as IdeaSource,
       title: "Document approved experiments",
       summary: "Capture what’s ready to ship",
       detail: "Link each approved idea to its implementation notes."
@@ -48,18 +58,35 @@ describe("filterIdeas", () => {
   ];
 
   it("allows filtering by status", () => {
-    const filtered = filterIdeas(ideas, "review", "");
+    const filtered = filterIdeas(ideas, "review", "all", "");
     expect(filtered.every((idea) => idea.status === "review")).toBe(true);
   });
 
+  it("allows filtering by source", () => {
+    const filtered = filterIdeas(ideas, "all", "human", "");
+    expect(filtered.every((idea) => idea.source === "human")).toBe(true);
+  });
+
   it("respects the query term", () => {
-    const filtered = filterIdeas(ideas, "all", "friendlier");
+    const filtered = filterIdeas(ideas, "all", "all", "friendlier");
     expect(filtered.length).toBe(1);
     expect(filtered[0].id).toBe("i-123");
   });
 
   it("returns all ideas when there is no filter", () => {
-    const filtered = filterIdeas(ideas, "all", "");
+    const filtered = filterIdeas(ideas, "all", "all", "");
     expect(filtered.length).toBe(3);
+  });
+});
+
+describe("summarizeSourceCounts", () => {
+  it("reports counts in the configured order", () => {
+    const humanIdea = { ...sampleIdea, id: "i-999", source: "human" as IdeaSource };
+    const counts = summarizeSourceCounts([sampleIdea, humanIdea]);
+
+    expect(counts).toEqual([
+      { source: "ai", count: 1 },
+      { source: "human", count: 1 }
+    ]);
   });
 });

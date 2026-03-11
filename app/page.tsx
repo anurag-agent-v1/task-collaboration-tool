@@ -6,10 +6,14 @@ import ideasData from "../data/ideas";
 import { filterEntries, globalSearch } from "../lib/filters";
 import {
   Idea,
+  IdeaSource,
   IdeaStatus,
   filterIdeas,
+  ideaSourceMetadata,
+  ideaSourceOrder,
   ideaStatusMetadata,
   ideaStatusOrder,
+  summarizeSourceCounts,
   summarizeStatusCounts
 } from "../lib/ideaPipeline";
 
@@ -18,7 +22,9 @@ const initialIdeaFormState = {
   summary: "",
   detail: "",
   tags: "",
-  status: "draft" as IdeaStatus
+  estimatedTime: "",
+  status: "draft" as IdeaStatus,
+  source: "ai" as IdeaSource
 };
 
 type IdeaFormState = typeof initialIdeaFormState;
@@ -32,6 +38,7 @@ export default function HomePage() {
 
   const [ideaPipeline, setIdeaPipeline] = useState<Idea[]>(ideasData);
   const [ideaStatusFilter, setIdeaStatusFilter] = useState<"all" | IdeaStatus>("all");
+  const [ideaSourceFilter, setIdeaSourceFilter] = useState<"all" | IdeaSource>("all");
   const [ideaQuery, setIdeaQuery] = useState("");
   const [ideaFormState, setIdeaFormState] = useState<IdeaFormState>(initialIdeaFormState);
 
@@ -42,9 +49,13 @@ export default function HomePage() {
     return globalSearch(globalQuery, entries);
   }, [globalQuery, globalSearchOpen]);
 
-  const filteredIdeas = useMemo(() => filterIdeas(ideaPipeline, ideaStatusFilter, ideaQuery), [ideaPipeline, ideaStatusFilter, ideaQuery]);
+  const filteredIdeas = useMemo(
+    () => filterIdeas(ideaPipeline, ideaStatusFilter, ideaSourceFilter, ideaQuery),
+    [ideaPipeline, ideaStatusFilter, ideaSourceFilter, ideaQuery]
+  );
 
   const ideaStatusCounts = useMemo(() => summarizeStatusCounts(ideaPipeline), [ideaPipeline]);
+  const ideaSourceCounts = useMemo(() => summarizeSourceCounts(ideaPipeline), [ideaPipeline]);
 
   const toggleGlobalSearch = useCallback(() => {
     setGlobalSearchOpen((prev) => !prev);
@@ -73,7 +84,9 @@ export default function HomePage() {
         summary: ideaFormState.summary.trim(),
         detail: ideaFormState.detail.trim(),
         status: ideaFormState.status,
+        source: ideaFormState.source,
         tags,
+        estimatedTime: ideaFormState.estimatedTime.trim() || "TBD",
         createdAt: new Date().toISOString().split("T")[0]
       };
 
@@ -171,27 +184,61 @@ export default function HomePage() {
               </div>
             ))}
           </div>
+          <div className="idea-source-summary">
+            <h3>Source recap</h3>
+            <div className="idea-source-grid">
+              {ideaSourceCounts.map(({ source, count }) => (
+                <div key={source} className="idea-source-summary-card">
+                  <span>{ideaSourceMetadata[source].icon}</span>
+                  <strong>{count}</strong>
+                  <p>{ideaSourceMetadata[source].label}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </header>
 
         <div className="idea-controls">
-          <div className="idea-filters">
-            <button
-              type="button"
-              className={ideaStatusFilter === "all" ? "active" : ""}
-              onClick={() => setIdeaStatusFilter("all")}
-            >
-              All ideas ({ideaPipeline.length})
-            </button>
-            {ideaStatusOrder.map((status) => (
+          <div className="idea-filter-groups">
+            <div className="idea-filters">
               <button
-                key={status}
                 type="button"
-                className={ideaStatusFilter === status ? "active" : ""}
-                onClick={() => setIdeaStatusFilter(status)}
+                className={ideaStatusFilter === "all" ? "active" : ""}
+                onClick={() => setIdeaStatusFilter("all")}
               >
-                {ideaStatusMetadata[status].label}
+                All ideas ({ideaPipeline.length})
               </button>
-            ))}
+              {ideaStatusOrder.map((status) => (
+                <button
+                  key={status}
+                  type="button"
+                  className={ideaStatusFilter === status ? "active" : ""}
+                  onClick={() => setIdeaStatusFilter(status)}
+                >
+                  {ideaStatusMetadata[status].label}
+                </button>
+              ))}
+            </div>
+            <div className="idea-source-filters">
+              <span>Source</span>
+              <button
+                type="button"
+                className={ideaSourceFilter === "all" ? "active" : ""}
+                onClick={() => setIdeaSourceFilter("all")}
+              >
+                Any source
+              </button>
+              {ideaSourceOrder.map((source) => (
+                <button
+                  key={source}
+                  type="button"
+                  className={ideaSourceFilter === source ? "active" : ""}
+                  onClick={() => setIdeaSourceFilter(source)}
+                >
+                  {ideaSourceMetadata[source].label}
+                </button>
+              ))}
+            </div>
           </div>
           <input
             type="search"
@@ -210,10 +257,22 @@ export default function HomePage() {
                   <span>{ideaStatusMetadata[idea.status].label}</span>
                   <span>{new Date(idea.createdAt).toLocaleDateString()}</span>
                 </div>
+                <div
+                  className="idea-source-pill"
+                  style={{
+                    borderColor: ideaSourceMetadata[idea.source].color,
+                    color: ideaSourceMetadata[idea.source].color
+                  }}
+                >
+                  {ideaSourceMetadata[idea.source].icon} {ideaSourceMetadata[idea.source].label}
+                </div>
                 <h3>{idea.title}</h3>
                 <p className="note">{idea.summary}</p>
                 <p className="note" style={{ fontSize: "0.9rem", color: "#1e293b" }}>
                   {idea.detail}
+                </p>
+                <p className="note" style={{ fontSize: "0.85rem", color: "#4b5563", margin: 0 }}>
+                  Estimated time: {idea.estimatedTime || "TBD"}
                 </p>
                 <div className="tags">
                   {idea.tags.map((tag) => (
@@ -267,12 +326,34 @@ export default function HomePage() {
               </select>
             </label>
             <label>
+              Source
+              <select
+                value={ideaFormState.source}
+                onChange={(event) => handleIdeaFieldChange("source", event.target.value as IdeaSource)}
+              >
+                {ideaSourceOrder.map((source) => (
+                  <option key={source} value={source}>
+                    {ideaSourceMetadata[source].label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
               Tags
               <input
                 type="text"
                 value={ideaFormState.tags}
                 onChange={(event) => handleIdeaFieldChange("tags", event.target.value)}
                 placeholder="Comma-separated"
+              />
+            </label>
+            <label>
+              Estimated time
+              <input
+                type="text"
+                value={ideaFormState.estimatedTime}
+                onChange={(event) => handleIdeaFieldChange("estimatedTime", event.target.value)}
+                placeholder="e.g. 2 hrs"
               />
             </label>
           </div>
