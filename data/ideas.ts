@@ -6,6 +6,7 @@ const ideas: Idea[] = [
     title: "Share a lightweight idea backlog",
     status: "draft",
     source: "ai",
+    priority: "medium",
     summary: "Capture short ideas that can be reviewed asynchronously.",
     detail:
       "A small backlog keeps each contributor’s spark on record. Show a summary, status, and tags so nothing slips away during busy weeks.",
@@ -18,6 +19,7 @@ const ideas: Idea[] = [
     title: "Status-aware idea cards",
     status: "review",
     source: "human",
+    priority: "high",
     summary: "Visualize whether an idea is being evaluated or already green-lighted.",
     detail:
       "Status chips, counts, and filters help everyone know whether an idea is ready for implementation or still in exploration.",
@@ -30,6 +32,7 @@ const ideas: Idea[] = [
     title: "Daily AI touchpoint",
     status: "implemented",
     source: "ai",
+    priority: "low",
     summary: "Have the AI summarize and hand off ideas in a digestible file.",
     detail:
       "A daily summary file keeps the user in the loop and makes it easy to approve concepts with a single response.",

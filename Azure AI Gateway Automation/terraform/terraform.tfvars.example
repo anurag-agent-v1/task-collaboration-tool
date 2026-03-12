@@ -1,0 +1,19 @@
+subscription_id          = "<SUBSCRIPTION_ID>"
+resource_group_name      = "ai-gateway-rg"
+location                 = "eastus2"
+environment              = "dev"
+gateway_name             = "foundry-model-gateway"
+apim_sku                 = "Developer_1"
+apim_publisher_name      = "AI Gateway Team"
+apim_publisher_email     = "ai-foundry-ops@contoso.com"
+apim_notification_email  = "ai-foundry-ops@contoso.com"
+openai_swagger_url       = "https://raw.githubusercontent.com/contoso/openapi-foundry-gateway/main/foundry-gateway.json"
+openai_model             = "GPT-4o-mini"
+openai_model_uri         = "https://api.openai.com/v1/models/gpt-4o-mini"
+foundry_sku              = "Standard"
+foundry_private_endpoint = false
+monitoring_retention_days = 60
+extra_tags = {
+  CostCenter = "AI"
+  Owner      = "AI Gateway"
+}

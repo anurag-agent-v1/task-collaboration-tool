@@ -6,13 +6,17 @@ import ideasData from "../data/ideas";
 import { filterEntries, globalSearch } from "../lib/filters";
 import {
   Idea,
+  IdeaPriority,
   IdeaSource,
   IdeaStatus,
   filterIdeas,
+  ideaPriorityMetadata,
+  ideaPriorityOrder,
   ideaSourceMetadata,
   ideaSourceOrder,
   ideaStatusMetadata,
   ideaStatusOrder,
+  summarizePriorityCounts,
   summarizeSourceCounts,
   summarizeStatusCounts
 } from "../lib/ideaPipeline";
@@ -24,7 +28,8 @@ const initialIdeaFormState = {
   tags: "",
   estimatedTime: "",
   status: "draft" as IdeaStatus,
-  source: "ai" as IdeaSource
+  source: "ai" as IdeaSource,
+  priority: "medium" as IdeaPriority
 };
 
 type IdeaFormState = typeof initialIdeaFormState;
@@ -39,6 +44,7 @@ export default function HomePage() {
   const [ideaPipeline, setIdeaPipeline] = useState<Idea[]>(ideasData);
   const [ideaStatusFilter, setIdeaStatusFilter] = useState<"all" | IdeaStatus>("all");
   const [ideaSourceFilter, setIdeaSourceFilter] = useState<"all" | IdeaSource>("all");
+  const [ideaPriorityFilter, setIdeaPriorityFilter] = useState<"all" | IdeaPriority>("all");
   const [ideaQuery, setIdeaQuery] = useState("");
   const [ideaFormState, setIdeaFormState] = useState<IdeaFormState>(initialIdeaFormState);
 
@@ -50,8 +56,8 @@ export default function HomePage() {
   }, [globalQuery, globalSearchOpen]);
 
   const filteredIdeas = useMemo(
-    () => filterIdeas(ideaPipeline, ideaStatusFilter, ideaSourceFilter, ideaQuery),
-    [ideaPipeline, ideaStatusFilter, ideaSourceFilter, ideaQuery]
+    () => filterIdeas(ideaPipeline, ideaStatusFilter, ideaSourceFilter, ideaPriorityFilter, ideaQuery),
+    [ideaPipeline, ideaStatusFilter, ideaSourceFilter, ideaPriorityFilter, ideaQuery]
   );
 
   const ideaStatusCounts = useMemo(() => summarizeStatusCounts(ideaPipeline), [ideaPipeline]);
