@@ -36,6 +36,11 @@
 - Run `npm run test` after every schema/component change to ensure the builder, helpers, and idea pipeline remain solid.
 - Launch `npm run dev` and hit http://localhost:3000 to confirm the UI renders after each task; capture screenshots or `curl` logs in the task journal if possible.
 
+## Implementation Task List
+1. **Schema helpers & payload tooling** – Extend `lib/agui.ts` with any missing template metadata, override helpers, and an N8N-friendly mapper so we can produce AG-UI intents programmatically.
+2. **Generative UI builder controls** – Create a dedicated React component (and related styles) that mirrors AG-UI templates, offers metadata overrides (tone, priority, description), and renders the resulting payload summary + JSON preview.
+3. **Unit tests + documentation** – Add Vitest suites covering the AG-UI helpers and builder component, then document the workflow (including the N8N mapping) so future contributors understand how to iterate safely.
+
 ## Next Steps
 - After the builder ships, capture a short technical note (in docs or memory logs) showing how an N8N stack would update the AG-UI payload, including any placeholder nodes for the future.
 - Keep iterating on AG-UI templates (multimodal cards, streaming sections) once the core schema + builder are stable.
