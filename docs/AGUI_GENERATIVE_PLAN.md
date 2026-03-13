@@ -2,25 +2,40 @@
 
 ## Overview
 - AG-UI (Agent User Interaction Protocol) is the open, event-based standard for streaming, multimodal agent experiences (https://docs.ag-ui.com/introduction).
-- The goal is to deliver a **customizable generative UI** layer that can be directed by agents and orchestrated from a modern frontend (Next.js) while keeping the user in control.
-- The project will also explore how AG-UI meshes with existing tooling such as **N8N** for agent orchestration.
+- The goal is to deliver a **customizable generative UI** layer that agents can steer while the hosting application remains in control of layout, tone, and validations.
+- Our frontend (Next.js) will render AG-UI-inspired templates, allow stakeholders to tweak constraints, and feed those updates back to agent execution flows orchestrated through **N8N**.
 
 ## Goals
-1. Define an AG-UI-flavored data model that supports generative UI intents, layout templates, and agent-driven constraints.
-2. Build frontend controls that allow a stakeholder to preview and tweak generated component trees, mirroring AG-UI’s declarative patterns.
-3. Instrument unit tests (Vitest + React Testing Library) so the generative UI logic stays reliable even as customization grows.
-4. Document the experience for future contributors, including N8N integration notes.
+1. Define a typed AG-UI schema that can serialize intents, component trees, and constraint metadata so generators stay predictable.
+2. Surface a builder panel that lets users pick templates, override metadata (title/description/tone/priority), and see the resulting JSON + summary in real time.
+3. Keep the generative surface covered by unit tests (Vitest + React Testing Library) so front-end updates never break the intent modeling.
+4. Capture the entire story—technical decisions, tasks, and how N8N workflows will trigger AG-UI updates—for future contributors and orchestrators.
 
-## Task Breakdown
-1. **Document the AG-UI generative UI story & task list** – capture high-level narrative, constraints (N8N agent plan), and the work breakdown so everyone stays aligned.
-2. **Add AG-UI schema helpers and mocks** – create `lib/agui.ts` (or similar) to define typed AG-UI intents, events, and sample generative UI payloads we can reuse in the frontend.
-3. **Implement the Generative UI Builder panel** – add React components that render AG-UI-style control panels, allow picking templates, editing fields, and previewing the generated payload.
-4. **Cover the AG-UI helpers with unit tests** – build Vitest tests (and a component smoke test if needed) to ensure the schema helpers and generative preview stay stable.
+## Execution Roadmap
+| Task | Description | Deliverables | Validation |
+| --- | --- | --- | --- |
+| 1. Story + plan | Write the narrative, constraints, and checklist so the team knows what "customizable AG-UI" means. | This doc with task list + N8N mapping | Dev server sanity check + confirmation that documentation reflects intent. |
+| 2. Schema helpers | Extend `lib/agui.ts` with generative template metadata, constraint helpers, and an N8N flow mapper. | New helpers, sample payload builder, exported metadata | Vitest suite covering payload cloning + N8N mapping. |
+| 3. Generative UI builder | Build a React control panel (components + page section) showing live previews and summary/flow snippets. | New `GenerativeUiBuilder` component + integration in `app/page.tsx` | RTL smoke test + existing UI still renders (dev server check). |
+| 4. Testing + documentation | Add unit tests for new helpers/components and log how N8N would trigger the experience. | Tests under `tests/` + doc section linking to new helpers | `npm run test`, `npm run build`, dev server preview. |
 
-Each task becomes its own git commit. For each commit we will:
-- Update files and run the relevant tests (Vitest/formatting) before committing.
-- Spin up the Next.js dev server, exercise the page via HTTP (mocking inputs if needed), and log what we inspected.
+## Customizable AG-UI Pillars
+1. **Template-driven components** – Each template declares a tree of cards, text blocks, buttons, and lists that match AG-UI conventions.
+2. **Constraint overrides** – Tone, priority, title, and description can be overridden while preserving the typed structure; component overrides keep generative UIs consistent.
+3. **Feedback loop** – The builder panel shows both the generated payload and a short summary so stakeholders stay confident before shipping the intent to an agent runtime.
+4. **N8N-ready metadata** – Each intent can be mapped to a lightweight N8N flow definition that demonstrates how an orchestrator can listen for AG-UI events, apply business logic, and push updates.
 
 ## N8N Considerations
-- Plan to orchestrate agent workflows through N8N by translating AG-UI actions into N8N nodes (design doc to capture at least one example in future iterations).
-- Document the mapping between AG-UI intents, generative UI metadata, and how an N8N flow could trigger UI updates (placeholder in this doc).
+- We plan to orchestrate agent development through N8N by mapping AG-UI intents to node sequences (webhook trigger → set metadata → HTTP request or agent event). Example mapping:
+  1. **Webhook listener** node accepts AG-UI events (template name, overrides, viewer metadata).
+  2. **Set node** normalizes tone/priority to match agent expectations.
+  3. **HTTP Request** or **Agent call** forwards embedded `components` and `metadata` to the runtime.
+- Document the mapping in this repo so future contributors can connect a flow, swap templates, and see how AG-UI events drive UI changes.
+
+## Validation & Testing Notes
+- Run `npm run test` after every schema/component change to ensure the builder, helpers, and idea pipeline remain solid.
+- Launch `npm run dev` and hit http://localhost:3000 to confirm the UI renders after each task; capture screenshots or `curl` logs in the task journal if possible.
+
+## Next Steps
+- After the builder ships, capture a short technical note (in docs or memory logs) showing how an N8N stack would update the AG-UI payload, including any placeholder nodes for the future.
+- Keep iterating on AG-UI templates (multimodal cards, streaming sections) once the core schema + builder are stable.
