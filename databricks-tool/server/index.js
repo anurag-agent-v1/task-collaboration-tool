@@ -102,6 +102,13 @@ app.post('/api/compare', (req, res) => {
       ? scored[0].matches.map((keyword) => `Detected keyword: ${keyword}`)
       : ['No direct keyword match; returning general recommendation.'];
 
+    const excerpt = script.trim().replace(/\s+/g, ' ').slice(0, 200);
+    db.saveComparison(excerpt, best.id, best.runtime_name, (saveErr) => {
+      if (saveErr) {
+        logger.warn(`Failed to log comparison: ${saveErr.message}`);
+      }
+    });
+
     logger.info(`Script compared. Best runtime: ${best.runtime_name}`);
 
     res.json({
@@ -112,6 +119,26 @@ app.post('/api/compare', (req, res) => {
       notes: best.notes,
       highlights
     });
+  });
+});
+
+app.get('/api/runtimes', (req, res) => {
+  db.getRuntimes((err, rows) => {
+    if (err) {
+      logger.error(`Unable to load runtimes for listing: ${err.message}`);
+      return res.status(500).json({ error: 'Database error' });
+    }
+    res.json({ runtimes: rows });
+  });
+});
+
+app.get('/api/comparisons', (req, res) => {
+  db.getComparisons((err, rows) => {
+    if (err) {
+      logger.error(`Unable to load comparisons: ${err.message}`);
+      return res.status(500).json({ error: 'Database error' });
+    }
+    res.json({ comparisons: rows });
   });
 });
 

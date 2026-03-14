@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Head from 'next/head';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
@@ -17,6 +17,8 @@ export default function Home() {
 
   const [runtimeList, setRuntimeList] = useState([]);
   const [runtimeLoading, setRuntimeLoading] = useState(true);
+  const [history, setHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(true);
 
   useEffect(() => {
     const fetchRuntimes = async () => {
@@ -34,6 +36,10 @@ export default function Home() {
     fetchRuntimes();
   }, []);
 
+  useEffect(() => {
+    loadHistory();
+  }, [loadHistory]);
+
   const submitScript = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -50,6 +56,7 @@ export default function Home() {
       if (!response.ok) throw new Error('Unable to fetch comparison');
       const data = await response.json();
       setResult(data);
+      loadHistory();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -94,6 +101,26 @@ export default function Home() {
     setAuthMessage('');
     setAuthError('');
   };
+
+  const scriptStats = script.trim()
+    ? {
+        words: script.trim().split(/\s+/).length,
+        characters: script.length
+      }
+    : null;
+
+  const loadHistory = useCallback(async () => {
+    setHistoryLoading(true);
+    try {
+      const response = await fetch(`${API_BASE}/api/comparisons`);
+      const data = await response.json();
+      setHistory(data.comparisons || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, []);
 
   return (
     <div className="page">
@@ -180,6 +207,20 @@ export default function Home() {
               </button>
             </form>
             {error && <p className="error">{error}</p>}
+            {scriptStats && (
+              <div className="script-stats">
+                <div>
+                  <p className="eyebrow">Script analysis</p>
+                  <p className="stats-value">{scriptStats.words}</p>
+                  <p className="stat-label">words</p>
+                </div>
+                <div>
+                  <p className="eyebrow">Characters</p>
+                  <p className="stats-value">{scriptStats.characters}</p>
+                  <p className="stat-label">total length</p>
+                </div>
+              </div>
+            )}
             {result && (
               <div className="result">
                 <div>
@@ -221,6 +262,29 @@ export default function Home() {
                 </article>
               ))}
             </div>
+          )}
+        </section>
+
+        <section className="panel history-panel">
+          <div className="panel-header">
+            <h2>Recent comparisons</h2>
+            <p>Track the last few scripts that were evaluated.</p>
+          </div>
+          {historyLoading ? (
+            <p>Loading history…</p>
+          ) : history.length ? (
+            <div className="history-grid">
+              {history.map((entry) => (
+                <article key={entry.id}>
+                  <p className="eyebrow">{new Date(entry.created_at).toLocaleString()}</p>
+                  <h3>{entry.runtime_name}</h3>
+                  <p className="meta">Spark {entry.spark_version} • {entry.language}</p>
+                  <p className="excerpt">{entry.script_excerpt}</p>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p>No comparisons logged yet.</p>
           )}
         </section>
       </main>
@@ -378,6 +442,48 @@ export default function Home() {
           margin: 0;
           font-size: 0.95rem;
           color: #cbd5f5;
+        }
+        .script-stats {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 0.75rem;
+          padding: 1rem;
+          border-radius: 1rem;
+          background: #eef2ff;
+          color: #0f172a;
+        }
+        .stats-value {
+          font-size: 1.75rem;
+          margin: 0;
+          font-weight: 600;
+        }
+        .stat-label {
+          margin: 0;
+          color: #475569;
+          font-size: 0.85rem;
+        }
+        .history-panel {
+          background: rgba(255, 255, 255, 0.96);
+        }
+        .history-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+          gap: 1rem;
+        }
+        .history-grid article {
+          border: 1px solid #e2e8f0;
+          border-radius: 0.75rem;
+          padding: 1rem;
+          background: #fff;
+        }
+        .history-grid .excerpt {
+          font-size: 0.9rem;
+          color: #0f172a;
+          margin-top: 0.5rem;
+        }
+        .history-grid .meta {
+          font-size: 0.85rem;
+          color: #475569;
         }
         .runtime-panel {
           background: rgba(255, 255, 255, 0.92);
