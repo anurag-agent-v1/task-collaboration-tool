@@ -115,6 +115,16 @@ app.post('/api/compare', (req, res) => {
   });
 });
 
+app.get('/api/runtimes', (req, res) => {
+  db.getRuntimes((err, rows) => {
+    if (err) {
+      logger.error(`Unable to load runtimes for listing: ${err.message}`);
+      return res.status(500).json({ error: 'Database error' });
+    }
+    res.json({ runtimes: rows });
+  });
+});
+
 app.use((req, res) => {
   res.status(404).json({ error: 'Not found' });
 });
