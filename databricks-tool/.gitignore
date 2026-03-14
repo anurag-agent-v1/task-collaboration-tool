@@ -1,6 +1,6 @@
-node_modules/
-.next/
-logs/
-data/
-*.db
+node_modules
+.next
+logs
+data
+.env.local
 .DS_Store

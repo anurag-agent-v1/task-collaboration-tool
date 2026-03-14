@@ -1,0 +1,24 @@
+{
+  "name": "databricks-tool",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev:frontend": "next dev",
+    "dev:backend": "node server/index.js",
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "concurrently": "^8.2.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "next": "14.0.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "sqlite3": "^5.1.6",
+    "winston": "^3.9.0",
+    "bcryptjs": "^2.4.3"
+  }
+}
