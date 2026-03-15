@@ -20,6 +20,7 @@ import {
   summarizeSourceCounts,
   summarizeStatusCounts
 } from "../lib/ideaPipeline";
+import GenerativeUiBuilder from "../components/GenerativeUiBuilder";
 
 const initialIdeaFormState = {
   title: "",
@@ -62,6 +63,7 @@ export default function HomePage() {
 
   const ideaStatusCounts = useMemo(() => summarizeStatusCounts(ideaPipeline), [ideaPipeline]);
   const ideaSourceCounts = useMemo(() => summarizeSourceCounts(ideaPipeline), [ideaPipeline]);
+  const ideaPriorityCounts = useMemo(() => summarizePriorityCounts(ideaPipeline), [ideaPipeline]);
 
   const toggleGlobalSearch = useCallback(() => {
     setGlobalSearchOpen((prev) => !prev);
@@ -198,6 +200,33 @@ export default function HomePage() {
                   <span>{ideaSourceMetadata[source].icon}</span>
                   <strong>{count}</strong>
                   <p>{ideaSourceMetadata[source].label}</p>
+                </div>
+              ))}
+            </div>
+            <div className="idea-priority-filters">
+              <span>Priority</span>
+              <button type="button" className={ideaPriorityFilter === "all" ? "active" : ""} onClick={() => setIdeaPriorityFilter("all")}>
+                Any priority
+              </button>
+              {ideaPriorityOrder.map((priority) => (
+                <button
+                  key={priority}
+                  type="button"
+                  className={ideaPriorityFilter === priority ? "active" : ""}
+                  onClick={() => setIdeaPriorityFilter(priority)}
+                >
+                  {ideaPriorityMetadata[priority].label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="idea-priority-summary">
+            <h3>Priority recap</h3>
+            <div className="idea-priority-grid">
+              {ideaPriorityCounts.map(({ priority, count }) => (
+                <div key={priority} className="idea-priority-summary-card">
+                  <span>{ideaPriorityMetadata[priority].label}</span>
+                  <strong>{count}</strong>
                 </div>
               ))}
             </div>
@@ -345,6 +374,19 @@ export default function HomePage() {
               </select>
             </label>
             <label>
+              Priority
+              <select
+                value={ideaFormState.priority}
+                onChange={(event) => handleIdeaFieldChange("priority", event.target.value)}
+              >
+                {ideaPriorityOrder.map((priority) => (
+                  <option key={priority} value={priority}>
+                    {ideaPriorityMetadata[priority].label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
               Tags
               <input
                 type="text"
@@ -373,6 +415,8 @@ export default function HomePage() {
           <button type="submit">Capture idea</button>
         </form>
       </section>
+
+      <GenerativeUiBuilder />
 
       {globalSearchOpen && (
         <div className="global-search-overlay" role="dialog" aria-modal="true">

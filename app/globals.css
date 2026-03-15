@@ -388,3 +388,90 @@ select,
 .idea-form textarea {
   min-height: 100px;
 }
+
+.generative-builder {
+  background: #fff;
+  border-radius: 1.25rem;
+  padding: 1.5rem;
+  box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
+  margin-bottom: 1.5rem;
+}
+
+.generative-builder header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.generative-builder header p {
+  margin: 0.25rem 0 1rem;
+  color: #4b5563;
+}
+
+.generative-builder-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.builder-form {
+  display: grid;
+  gap: 0.8rem;
+  padding-right: 0.5rem;
+}
+
+.builder-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+}
+
+.builder-form input,
+.builder-form select {
+  border-radius: 0.65rem;
+  border: 1px solid #d8dde7;
+  padding: 0.65rem;
+  font-size: 0.95rem;
+}
+
+.builder-preview {
+  border-radius: 1rem;
+  border: 1px solid #e5e7eb;
+  padding: 1rem;
+  background: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.builder-summary {
+  font-weight: 600;
+  color: #111827;
+}
+
+.builder-flow h3,
+.builder-json h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: #1f2937;
+}
+
+.builder-flow ul {
+  margin: 0;
+  padding-left: 1rem;
+  color: #1f2937;
+}
+
+.builder-flow-summary {
+  margin: 0.35rem 0;
+  color: #475569;
+}
+
+.builder-json pre {
+  margin: 0;
+  background: #fff;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  max-height: 240px;
+  overflow: auto;
+}

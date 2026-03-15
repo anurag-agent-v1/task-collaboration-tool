@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   IdeaSource,
   IdeaStatus,
+  IdeaPriority,
   filterIdeas,
   matchesIdea,
   ideaStatusOrder,
@@ -16,6 +17,7 @@ const sampleIdea = {
   tags: ["ux", "workflow"],
   status: "draft" as IdeaStatus,
   source: "ai" as IdeaSource,
+  priority: "medium" as unknown as any,
   createdAt: "2026-03-10"
 };
 
@@ -68,13 +70,13 @@ describe("filterIdeas", () => {
   });
 
   it("respects the query term", () => {
-    const filtered = filterIdeas(ideas, "all", "all", "friendlier");
+    const filtered = filterIdeas(ideas, "all", "all", "all", "friendlier");
     expect(filtered.length).toBe(1);
     expect(filtered[0].id).toBe("i-123");
   });
 
   it("returns all ideas when there is no filter", () => {
-    const filtered = filterIdeas(ideas, "all", "all", "");
+    const filtered = filterIdeas(ideas, "all", "all", "all", "");
     expect(filtered.length).toBe(3);
   });
 });
